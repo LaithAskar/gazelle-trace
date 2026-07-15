@@ -10,4 +10,5 @@
 - Defined the trust trace as a product surface, not an internal log: sources, model decision, moderation, answer-leakage check, grounding, and verification are visible.
 - The first hosted build correctly rejected a plain Next.js server bundle. An OpenNext attempt then exposed missing runtime chunks in its Windows output, so it was not shipped.
 - Switched the deployment compiler to Vinext, which is explicitly supported by the hosting target. The compatibility scan reports 94% support with zero blocking issues; both the static page and API routes run from the production `dist/` bundle.
+- Added a post-build packaging step that copies the checked-in Sites manifest into `dist/.openai/`, as required by the hosted artifact contract.
 - Expanded the release evidence with a live-case eval matrix and a timed three-minute demo script.
