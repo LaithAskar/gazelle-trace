@@ -23,10 +23,11 @@ npm run typecheck
 npm test
 npm run lint
 npm run build
-npm run build:cloudflare
+npm run check:vinext
+npm run build:next
 ```
 
-`npm run build:cloudflare` produces the `.open-next/worker.js` entrypoint used by the hosted judge build.
+`npm run build` produces the Vinext `dist/` artifact used by the hosted judge build. `npm run build:next` is a second compatibility check against stock Next.js.
 
 ## How Codex is being used
 
