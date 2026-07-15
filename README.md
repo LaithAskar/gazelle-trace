@@ -29,6 +29,12 @@ npm run build:next
 
 `npm run build` produces the Vinext `dist/` artifact used by the hosted judge build. `npm run build:next` is a second compatibility check against stock Next.js.
 
+For the closest local reproduction of the hosted edge runtime:
+
+```bash
+npx wrangler dev dist/server/index.js --assets dist/client --local
+```
+
 ## How Codex is being used
 
 Codex is driving the event-period implementation from the repository's `AGENTS.md`: product scoping, architecture, UI, OpenAI integration, safety invariants, test generation, debugging, browser verification, and submission preparation. `BUILD_LOG.md` records the major decisions rather than pretending every generated line was automatically correct.

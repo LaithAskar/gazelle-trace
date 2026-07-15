@@ -11,4 +11,6 @@
 - The first hosted build correctly rejected a plain Next.js server bundle. An OpenNext attempt then exposed missing runtime chunks in its Windows output, so it was not shipped.
 - Switched the deployment compiler to Vinext, which is explicitly supported by the hosting target. The compatibility scan reports 94% support with zero blocking issues; both the static page and API routes run from the production `dist/` bundle.
 - Added a post-build packaging step that copies the checked-in Sites manifest into `dist/.openai/`, as required by the hosted artifact contract.
+- Wrapped Vinext's bare request handler in a standard module Worker `fetch()` export and kept non-handler metadata private; Cloudflare otherwise treats the function as a `WorkerEntrypoint` class and named metadata values as RPC entrypoints during isolate startup.
+- Verified the packaged artifact inside Wrangler's local Workers runtime: page, health endpoint, and tutor analysis all returned HTTP 200.
 - Expanded the release evidence with a live-case eval matrix and a timed three-minute demo script.
