@@ -23,7 +23,10 @@ npm run typecheck
 npm test
 npm run lint
 npm run build
+npm run build:cloudflare
 ```
+
+`npm run build:cloudflare` produces the `.open-next/worker.js` entrypoint used by the hosted judge build.
 
 ## How Codex is being used
 
@@ -32,4 +35,3 @@ Codex is driving the event-period implementation from the repository's `AGENTS.m
 ## Current product boundary
 
 The submission focuses on one polished workflow for fourth-grade fraction equivalence and addition. It deliberately does not attempt to be a complete LMS, parent portal, or universal K–6 curriculum.
-

@@ -17,6 +17,10 @@ describe("answer leakage", () => {
       ),
     ).toBeNull();
   });
+
+  it("does not mistake letters inside a longer word for a prose answer", () => {
+    expect(detectAnswerLeak("Do not reveal the result; ask the learner to reason.", ["no"])).toBeNull();
+  });
 });
 
 describe("PII detection", () => {
@@ -29,4 +33,3 @@ describe("PII detection", () => {
     expect(detectLikelyPii("I changed the 2 to a 4")).toBe(false);
   });
 });
-

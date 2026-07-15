@@ -12,6 +12,16 @@ export function detectAnswerLeak(text: string, forbiddenAnswers: string[]): stri
   const normalizedText = normalizeMath(text);
 
   for (const answer of forbiddenAnswers) {
+    if (/^[a-z\s]+$/i.test(answer)) {
+      const words = answer
+        .trim()
+        .split(/\s+/)
+        .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      const phrase = new RegExp(`\\b${words.join("\\s+")}\\b`, "i");
+      if (phrase.test(text)) return answer;
+      continue;
+    }
+
     const normalizedAnswer = normalizeMath(answer);
     if (normalizedAnswer.length > 1 && normalizedText.includes(normalizedAnswer)) {
       return answer;
@@ -40,4 +50,3 @@ export function makeCheck(
     detail,
   };
 }
-
