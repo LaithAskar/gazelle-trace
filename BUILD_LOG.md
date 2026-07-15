@@ -14,4 +14,5 @@
 - Wrapped Vinext's bare request handler in a standard module Worker `fetch()` export and kept non-handler metadata private; Cloudflare otherwise treats the function as a `WorkerEntrypoint` class and named metadata values as RPC entrypoints during isolate startup.
 - Verified the packaged artifact inside Wrangler's local Workers runtime: page, health endpoint, and tutor analysis all returned HTTP 200.
 - Forwarded Cloudflare's execution context into Vinext's request handler so dynamic routes receive `waitUntil()` and request-lifecycle semantics in the hosted runtime.
+- Bundled the OpenAI and Zod runtime dependencies into `dist/`; hosted Sites artifacts do not ship the repository's `node_modules`, even though local Wrangler can resolve them.
 - Expanded the release evidence with a live-case eval matrix and a timed three-minute demo script.
