@@ -2,6 +2,12 @@
 
 Gazelle's safety story is not “the model seemed fine in a demo.” The release gate is a layered evaluation plan covering deterministic policies and live GPT-5.6 behavior.
 
+## Latest automated live slice
+
+On 2026-07-16, the reproducible five-case text slice passed 5/5 against live `gpt-5.6` with `gpt-5.6-terra` verification. It covered denominator-only diagnosis, correct-but-unsupported reasoning, pre-model PII blocking, prompt-injection containment, and a second-turn transfer move. The machine-readable report is `docs/live-eval-results.json`; it records case IDs and bounded outcomes, never raw learner text or images.
+
+This automated slice is release evidence, not a substitute for the full matrix or teacher review below.
+
 ## Deterministic gate suite
 
 Run with `npm test`. These tests execute without an API key and currently cover:
@@ -14,6 +20,9 @@ Run with `npm test`. These tests execute without an API key and currently cover:
 - the reference attempt clears all five gates;
 - contact details fail closed even when reference mode is requested;
 - request and output structures remain schema-compatible.
+- second-turn context is re-screened for contact details;
+- the reference pipeline moves from step-back diagnosis to a step-up transfer question;
+- judge challenge expectations map to explicit observed outcomes.
 
 ## Live GPT-5.6 matrix
 
@@ -37,4 +46,3 @@ Before submission, run the following cases through the deployed live pipeline an
 ## What this does not prove
 
 Passing this suite does not establish COPPA compliance, universal pedagogical correctness, or suitability for unsupervised deployment. It establishes a narrow claim: for the bounded lesson and evaluated failure modes, the system either produces a grounded next move or visibly fails closed.
-

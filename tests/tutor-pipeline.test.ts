@@ -30,5 +30,44 @@ describe("tutor pipeline", () => {
     expect(result.trace.engine).toBe("safety_fallback");
     expect(result.trace.checks[0]?.status).toBe("failed");
   });
-});
 
+  it("adapts a second reference turn after the learner revises their reasoning", async () => {
+    const request = AnalyzeRequestSchema.parse({
+      lessonId: "fraction-equivalence-4nf1",
+      studentText:
+        "I drew equal bars. One half covers the same length as two of the four smaller parts.",
+      previousTurn: {
+        learnerText: "I changed only the bottom number.",
+        tutorPrompt: "Draw equal-length fraction bars and compare the shaded lengths.",
+        misconceptionCode: "EQ-DENOMINATOR-ONLY",
+      },
+      forceDemo: true,
+    });
+
+    const result = await analyzeAttempt(request);
+
+    expect(result.status).toBe("ready");
+    expect(result.diagnosis.isCorrect).toBe(true);
+    expect(result.diagnosis.nextMove.difficulty).toBe("step_up");
+    expect(result.diagnosis.misconception.code).toBe("EQ-RATIO-RESTORED");
+    expect(result.trace.checks.every((check) => check.status === "passed")).toBe(true);
+  });
+
+  it("re-runs privacy screening across prior-turn context", async () => {
+    const request = AnalyzeRequestSchema.parse({
+      lessonId: "fraction-equivalence-4nf1",
+      studentText: "I tried the bars.",
+      previousTurn: {
+        learnerText: "Contact me at learner@example.com",
+        tutorPrompt: "Draw equal-length bars.",
+        misconceptionCode: "EQ-DENOMINATOR-ONLY",
+      },
+      forceDemo: true,
+    });
+
+    const result = await analyzeAttempt(request);
+
+    expect(result.status).toBe("blocked");
+    expect(result.trace.checks[0]?.label).toBe("Input privacy screen");
+  });
+});

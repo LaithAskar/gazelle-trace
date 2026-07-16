@@ -8,12 +8,17 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
+  ClipboardCheck,
+  Download,
   Eye,
   FileImage,
   Gauge,
   GraduationCap,
   ImageUp,
   LockKeyhole,
+  MessageSquareReply,
+  Pause,
+  Play,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -21,14 +26,26 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { DEMO_STUDENT_TEXT } from "@/lib/demo";
-import type { TutorResult } from "@/lib/schemas";
+import {
+  evaluateChallenge,
+  JUDGE_CHALLENGES,
+  type JudgeChallenge,
+} from "@/lib/challenges";
+import { DEMO_FOLLOW_UP_TEXT, DEMO_STUDENT_TEXT } from "@/lib/demo";
+import type { PreviousTurn, TutorResult } from "@/lib/schemas";
 
 type Health = {
   ok: boolean;
   liveModelConfigured: boolean;
   primaryModel: string;
   verifierModel: string;
+};
+
+type TeacherDecision = "pending" | "approved" | "held";
+
+type CompletedTurn = {
+  learnerText: string;
+  result: TutorResult;
 };
 
 const CHECK_ICONS = {
@@ -49,10 +66,22 @@ export function GazelleStudio() {
   const [imageDataUrl, setImageDataUrl] = useState<string>();
   const [imageName, setImageName] = useState<string>();
   const [forceDemo, setForceDemo] = useState(false);
-  const [result, setResult] = useState<TutorResult>();
-  const [loading, setLoading] = useState(false);
+  const [turns, setTurns] = useState<CompletedTurn[]>([]);
+  const [followUpText, setFollowUpText] = useState(DEMO_FOLLOW_UP_TEXT);
+  const [teacherDecision, setTeacherDecision] = useState<TeacherDecision>("pending");
+  const [selectedChallengeId, setSelectedChallengeId] =
+    useState<JudgeChallenge["id"]>("denominator-only");
+  const [loadingStage, setLoadingStage] = useState<"initial" | "follow_up">();
   const [error, setError] = useState<string>();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const result = turns[turns.length - 1]?.result;
+  const selectedChallenge = JUDGE_CHALLENGES.find(
+    (challenge) => challenge.id === selectedChallengeId,
+  );
+  const challengeVerdict = result && selectedChallenge
+    ? evaluateChallenge(selectedChallenge, result)
+    : undefined;
 
   useEffect(() => {
     fetch("/api/health")
@@ -83,10 +112,13 @@ export function GazelleStudio() {
     reader.readAsDataURL(file);
   }
 
-  async function analyze() {
-    setLoading(true);
+  async function requestAnalysis(
+    text: string,
+    stage: "initial" | "follow_up",
+    previousTurn?: PreviousTurn,
+  ) {
+    setLoadingStage(stage);
     setError(undefined);
-    setResult(undefined);
 
     try {
       const response = await fetch("/api/tutor/analyze", {
@@ -94,9 +126,10 @@ export function GazelleStudio() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lessonId: "fraction-equivalence-4nf1",
-          studentText,
-          imageDataUrl,
+          studentText: text,
+          imageDataUrl: stage === "initial" ? imageDataUrl : undefined,
           forceDemo,
+          previousTurn,
         }),
       });
       const data: unknown = await response.json();
@@ -107,12 +140,83 @@ export function GazelleStudio() {
             : "The attempt could not be analyzed.";
         throw new Error(message);
       }
-      setResult(data as TutorResult);
+      return data as TutorResult;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The attempt could not be analyzed.");
+      return undefined;
     } finally {
-      setLoading(false);
+      setLoadingStage(undefined);
     }
+  }
+
+  async function analyze() {
+    setTurns([]);
+    setTeacherDecision("pending");
+    const nextResult = await requestAnalysis(studentText, "initial");
+    if (nextResult) {
+      setTurns([{ learnerText: studentText, result: nextResult }]);
+      setFollowUpText(
+        selectedChallengeId === "denominator-only" ? DEMO_FOLLOW_UP_TEXT : "",
+      );
+    }
+  }
+
+  async function continueLesson() {
+    const firstTurn = turns[0];
+    if (!firstTurn || !followUpText.trim() || turns.length > 1) return;
+
+    const previousTurn: PreviousTurn = {
+      learnerText: firstTurn.learnerText,
+      tutorPrompt: firstTurn.result.diagnosis.nextMove.prompt,
+      misconceptionCode: firstTurn.result.diagnosis.misconception.code,
+    };
+    const nextResult = await requestAnalysis(followUpText, "follow_up", previousTurn);
+    if (nextResult) {
+      setTurns((current) => [
+        ...current,
+        { learnerText: followUpText, result: nextResult },
+      ]);
+      setTeacherDecision("pending");
+    }
+  }
+
+  function chooseChallenge(challenge: JudgeChallenge) {
+    setSelectedChallengeId(challenge.id);
+    setStudentText(challenge.studentText);
+    setImageDataUrl(undefined);
+    setImageName(undefined);
+    setTurns([]);
+    setTeacherDecision("pending");
+    setFollowUpText(challenge.id === "denominator-only" ? DEMO_FOLLOW_UP_TEXT : "");
+    setError(undefined);
+  }
+
+  function downloadAudit() {
+    if (!result) return;
+    const audit = {
+      product: "Gazelle Trace",
+      exportedAt: new Date().toISOString(),
+      lesson: result.lesson,
+      teacherDecision,
+      challenge: selectedChallenge
+        ? { id: selectedChallenge.id, expectation: selectedChallenge.expectation }
+        : null,
+      turns: turns.map((turn, index) => ({
+        turn: index + 1,
+        status: turn.result.status,
+        diagnosis: turn.result.diagnosis,
+        trace: turn.result.trace,
+      })),
+      privacyNote: "Uploaded images and raw learner text are intentionally excluded.",
+    };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(audit, null, 2)], { type: "application/json" }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `gazelle-trace-${result.id}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   function reset() {
@@ -120,7 +224,10 @@ export function GazelleStudio() {
     setImageDataUrl(undefined);
     setImageName(undefined);
     setForceDemo(false);
-    setResult(undefined);
+    setTurns([]);
+    setFollowUpText(DEMO_FOLLOW_UP_TEXT);
+    setTeacherDecision("pending");
+    setSelectedChallengeId("denominator-only");
     setError(undefined);
   }
 
@@ -156,7 +263,9 @@ export function GazelleStudio() {
             {result ? <Check size={13} strokeWidth={3} /> : "2"} Diagnose
           </span>
           <span className="step-line" />
-          <span className={`step ${result ? "active" : ""}`}>3 Act</span>
+          <span className={`step ${turns.length > 1 ? "complete" : result ? "active" : ""}`}>
+            {turns.length > 1 ? <Check size={13} strokeWidth={3} /> : "3"} Adapt
+          </span>
         </div>
 
         <div className={`engine-pill ${result?.status === "blocked" ? "held" : ""}`}>
@@ -239,7 +348,9 @@ export function GazelleStudio() {
               <span className="panel-kicker">LEARNER ATTEMPT</span>
               <h2>Show what you were thinking</h2>
             </div>
-            <span className="attempt-chip">Attempt 01</span>
+            <span className="attempt-chip">
+              {turns.length > 1 ? "2 turns traced" : "Turn 1 of 2"}
+            </span>
           </div>
 
           <div className="question-card">
@@ -248,6 +359,37 @@ export function GazelleStudio() {
               <span>QUICK CHECK</span>
               <p>Is <strong>½</strong> equivalent to <strong>¼</strong>? Show or explain your reasoning.</p>
             </div>
+          </div>
+
+          <div className="challenge-set" aria-label="Judge challenge set">
+            <div className="challenge-heading">
+              <div>
+                <ClipboardCheck size={16} />
+                <span>
+                  <strong>Judge challenge set</strong>
+                  Stress-test the exact claim
+                </span>
+              </div>
+              <span>5 live cases</span>
+            </div>
+            <div className="challenge-options">
+              {JUDGE_CHALLENGES.map((challenge) => (
+                <button
+                  className={challenge.id === selectedChallengeId ? "selected" : ""}
+                  type="button"
+                  onClick={() => chooseChallenge(challenge)}
+                  key={challenge.id}
+                >
+                  {challenge.shortLabel}
+                </button>
+              ))}
+            </div>
+            {selectedChallenge && (
+              <div className="challenge-expectation">
+                <span>EXPECTED</span>
+                <p>{selectedChallenge.expectation}</p>
+              </div>
+            )}
           </div>
 
           <label className="work-label" htmlFor="student-work">
@@ -328,9 +470,9 @@ export function GazelleStudio() {
               className="analyze-button"
               type="button"
               onClick={analyze}
-              disabled={loading || (!studentText.trim() && !imageDataUrl)}
+              disabled={Boolean(loadingStage) || (!studentText.trim() && !imageDataUrl)}
             >
-              {loading ? (
+              {loadingStage === "initial" ? (
                 <>
                   <span className="spinner" /> Running safety pipeline…
                 </>
@@ -341,6 +483,33 @@ export function GazelleStudio() {
               )}
             </button>
           </div>
+
+          {challengeVerdict && selectedChallenge && (
+            <div className={`challenge-result ${challengeVerdict.verdict}`}>
+              <span>{challengeVerdict.verdict === "passed" ? <Check size={15} /> : <CircleAlert size={15} />}</span>
+              <div>
+                <strong>
+                  {challengeVerdict.verdict === "passed" ? "Expected behavior observed" : "Teacher review required"}
+                </strong>
+                <p>{challengeVerdict.observed}</p>
+              </div>
+              <small>{selectedChallenge.shortLabel}</small>
+            </div>
+          )}
+
+          {turns.length > 1 && (
+            <div className="adaptation-strip" aria-label="Two-turn adaptation trace">
+              <div>
+                <span>TURN 1 · STEP BACK</span>
+                <strong>{turns[0].result.diagnosis.misconception.label}</strong>
+              </div>
+              <ArrowRight size={18} />
+              <div>
+                <span>TURN 2 · {result?.diagnosis.nextMove.difficulty.replace("_", " ")}</span>
+                <strong>{result?.diagnosis.misconception.label}</strong>
+              </div>
+            </div>
+          )}
 
           {result && (
             <div className={`diagnosis-card ${result.status === "blocked" ? "blocked" : ""}`}>
@@ -364,6 +533,98 @@ export function GazelleStudio() {
                 <strong>Teacher action</strong>
                 <span>{result.diagnosis.teacherAction}</span>
               </div>
+            </div>
+          )}
+
+          {result && (
+            <div className={`teacher-checkpoint ${teacherDecision}`}>
+              <div className="checkpoint-heading">
+                <div>
+                  <GraduationCap size={17} />
+                  <span>
+                    <strong>Teacher checkpoint</strong>
+                    Automation proposes. The teacher decides.
+                  </span>
+                </div>
+                <button type="button" onClick={downloadAudit}>
+                  <Download size={15} /> Export trace
+                </button>
+              </div>
+
+              <div className="decision-buttons">
+                <button
+                  className="approve-decision"
+                  type="button"
+                  onClick={() => setTeacherDecision("approved")}
+                  disabled={result.status === "blocked"}
+                >
+                  <Play size={15} /> Approve next move
+                </button>
+                <button
+                  className="hold-decision"
+                  type="button"
+                  onClick={() => setTeacherDecision("held")}
+                >
+                  <Pause size={15} /> Hold for review
+                </button>
+              </div>
+
+              {teacherDecision !== "pending" && (
+                <div className="decision-status" role="status">
+                  {teacherDecision === "approved" ? <CheckCircle2 size={16} /> : <ShieldCheck size={16} />}
+                  <span>
+                    <strong>{teacherDecision === "approved" ? "Teacher approved" : "Teacher hold recorded"}</strong>
+                    {teacherDecision === "approved"
+                      ? "The learner may receive this one bounded move."
+                      : "Nothing advances until a teacher reviews the evidence."}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {result &&
+            result.status === "ready" &&
+            turns.length === 1 &&
+            teacherDecision === "approved" && (
+              <div className="follow-up-card">
+                <div className="follow-up-heading">
+                  <MessageSquareReply size={18} />
+                  <span>
+                    <strong>Continue the learning loop</strong>
+                    Did the reasoning change after the hint?
+                  </span>
+                  <small>TURN 2 OF 2</small>
+                </div>
+                <label htmlFor="follow-up-response">Learner response to the approved move</label>
+                <textarea
+                  id="follow-up-response"
+                  value={followUpText}
+                  onChange={(event) => setFollowUpText(event.target.value)}
+                  maxLength={1200}
+                  placeholder="Type what the learner tried next…"
+                />
+                <button
+                  type="button"
+                  onClick={continueLesson}
+                  disabled={Boolean(loadingStage) || !followUpText.trim()}
+                >
+                  {loadingStage === "follow_up" ? (
+                    <><span className="spinner" /> Re-running all five gates…</>
+                  ) : (
+                    <><Sparkles size={16} /> Trace the adaptation <ArrowRight size={16} /></>
+                  )}
+                </button>
+              </div>
+            )}
+
+          {turns.length > 1 && teacherDecision === "approved" && (
+            <div className="loop-complete">
+              <CheckCircle2 size={18} />
+              <span>
+                <strong>Adaptive loop proven</strong>
+                Two learner states, two independently verified moves, one inspectable trace.
+              </span>
             </div>
           )}
         </section>
@@ -459,4 +720,3 @@ export function GazelleStudio() {
     </main>
   );
 }
-

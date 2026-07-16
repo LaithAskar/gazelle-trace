@@ -56,6 +56,12 @@ export const VerificationSchema = z.object({
   notes: z.string(),
 });
 
+export const PreviousTurnSchema = z.object({
+  learnerText: z.string().trim().max(1200),
+  tutorPrompt: z.string().trim().min(1).max(600),
+  misconceptionCode: z.string().trim().min(1).max(100),
+});
+
 export const AnalyzeRequestSchema = z
   .object({
     lessonId: z.literal("fraction-equivalence-4nf1"),
@@ -69,6 +75,7 @@ export const AnalyzeRequestSchema = z
       )
       .optional(),
     forceDemo: z.boolean().optional().default(false),
+    previousTurn: PreviousTurnSchema.optional(),
   })
   .refine((value) => value.studentText.length > 0 || Boolean(value.imageDataUrl), {
     message: "Submit typed work or an image.",
@@ -101,4 +108,4 @@ export type TraceCheck = z.infer<typeof TraceCheckSchema>;
 export type TutorDiagnosis = z.infer<typeof TutorDiagnosisSchema>;
 export type TutorResult = z.infer<typeof TutorResultSchema>;
 export type Verification = z.infer<typeof VerificationSchema>;
-
+export type PreviousTurn = z.infer<typeof PreviousTurnSchema>;

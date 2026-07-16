@@ -1,9 +1,12 @@
 import { LESSON, retrieveCurriculum } from "@/lib/curriculum";
 import { detectAnswerLeak, makeCheck } from "@/lib/safety";
-import type { TutorDiagnosis, TutorResult } from "@/lib/schemas";
+import type { AnalyzeRequest, TutorDiagnosis, TutorResult } from "@/lib/schemas";
 
 export const DEMO_STUDENT_TEXT =
   "I wrote 1/2 = 1/4 because I changed the bottom number from 2 to 4.";
+
+export const DEMO_FOLLOW_UP_TEXT =
+  "I drew equal bars. One half covers the same length as two of the four smaller parts.";
 
 export const DEMO_DIAGNOSIS: TutorDiagnosis = {
   observation:
@@ -28,11 +31,38 @@ export const DEMO_DIAGNOSIS: TutorDiagnosis = {
     "Ask the learner to explain what changed and what stayed the same after repartitioning the bar.",
 };
 
-export function buildDemoResult(startedAt = Date.now()): TutorResult {
+export const DEMO_FOLLOW_UP_DIAGNOSIS: TutorDiagnosis = {
+  observation:
+    "The learner now compares equal wholes and recognizes that repartitioning changes the piece count, not the represented amount.",
+  misconception: {
+    code: "EQ-RATIO-RESTORED",
+    label: "Repartitioning now preserves the same amount",
+    evidence:
+      "The follow-up explicitly compares equal-length bars and matches one larger part with two smaller parts.",
+    confidence: 0.94,
+  },
+  isCorrect: true,
+  nextMove: {
+    kind: "clarifying_question",
+    prompt:
+      "Try the same idea with thirds and sixths. What must stay unchanged when you split the whole into more equal pieces?",
+    difficulty: "step_up",
+    rationale:
+      "A transfer question checks whether the learner can generalize the visual relationship without receiving an answer.",
+  },
+  teacherAction:
+    "Ask the learner to explain the rule in their own words, then test it with a new pair of fraction bars.",
+};
+
+export function buildDemoResult(
+  startedAt = Date.now(),
+  request?: Pick<AnalyzeRequest, "previousTurn">,
+): TutorResult {
+  const diagnosis = request?.previousTurn ? DEMO_FOLLOW_UP_DIAGNOSIS : DEMO_DIAGNOSIS;
   const sources = retrieveCurriculum(
     `${LESSON.question} denominator equivalent visual fraction misconception`,
   );
-  const leak = detectAnswerLeak(DEMO_DIAGNOSIS.nextMove.prompt, LESSON.expectedAnswerVariants);
+  const leak = detectAnswerLeak(diagnosis.nextMove.prompt, LESSON.expectedAnswerVariants);
 
   return {
     id: crypto.randomUUID(),
@@ -43,7 +73,7 @@ export function buildDemoResult(startedAt = Date.now()): TutorResult {
       standard: LESSON.standard,
       question: LESSON.question,
     },
-    diagnosis: DEMO_DIAGNOSIS,
+    diagnosis,
     trace: {
       engine: "demo",
       primaryModel: "deterministic reference pipeline",
@@ -85,4 +115,3 @@ export function buildDemoResult(startedAt = Date.now()): TutorResult {
     },
   };
 }
-
