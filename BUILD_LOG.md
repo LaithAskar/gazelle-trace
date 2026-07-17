@@ -34,3 +34,4 @@
 - Tightened the primary and verifier instructions after the expanded matrix showed an unrelated science request being redirected into a fraction exercise instead of handed to a teacher.
 - Rewrote the README around a 60-second judge path, explicit Codex collaboration, honest limitations, and public testing instructions.
 - Prepared final Devpost copy and a timed 2:55 recording script; public YouTube publication remains an entrant-owned submission step.
+- A first production run exposed nondeterministic false-positive leakage holds on the weak-evidence and second-turn cases. Tightened both generation and verification rubrics around neutral justification and transfer questions, and raised verifier reasoning effort rather than adding retries or silently counting safe holds as pedagogical passes.
