@@ -629,6 +629,12 @@ a {
   margin-top: 12px;
 }
 
+.upload-options {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .upload-button {
   display: flex;
   align-items: center;
@@ -659,6 +665,27 @@ a {
 .upload-button strong {
   color: var(--ink);
   font-size: 11px;
+}
+
+.sample-image-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 11px;
+  border: 1px solid #cfe0d6;
+  border-radius: 10px;
+  background: var(--green-soft);
+  color: var(--green);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.sample-image-button:hover {
+  border-color: var(--green);
+  background: #e5f2eb;
 }
 
 .image-preview {
@@ -1605,6 +1632,15 @@ footer {
   .upload-button,
   .image-preview,
   .analyze-button {
+    width: 100%;
+  }
+
+  .upload-options {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .sample-image-button {
     width: 100%;
   }
 

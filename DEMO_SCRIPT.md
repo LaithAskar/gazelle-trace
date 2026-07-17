@@ -1,50 +1,66 @@
-# Three-minute demo script
+# Final demo video — 2:55 maximum
 
-## 0:00–0:18 — Hook
+Record the deployed public URL at 1440p or higher with browser zoom near 90%. Hide bookmarks and notifications. Wait until the top-right pill says **GPT-5.6 ready**. Do not record in reference mode.
 
-“Most AI tutors optimize for producing an answer. With a nine-year-old, the harder problem is knowing whether the next hint is correct, age-appropriate, grounded in what the teacher approved, and still makes the child think. Gazelle Trace makes that decision inspectable.”
+## 0:00–0:15 — Hook
 
-Show the complete studio, not slides.
+**Say:** “Most AI tutors optimize for producing an answer. With a nine-year-old, the harder problem is proving the next hint is grounded, age-appropriate, and still makes the learner think. Gazelle Trace makes that decision inspectable.”
 
-## 0:18–0:45 — Teacher boundary
+**Show:** Product title and complete studio. Do not begin with slides.
 
-Point to the Grade 4 fraction objective, bound standard, and approved source count.
+## 0:15–0:32 — Teacher boundary
 
-“The tutor cannot roam the internet or improvise a curriculum. This session is bounded to one teacher-approved objective and its evidence.”
+**Say:** “This session is bounded to one teacher-approved Grade 4 objective and four curated sources. The tutor cannot browse for a curriculum or improvise a lesson.”
 
-## 0:45–1:25 — Learner work and adaptation
+**Show:** Objective, standard, and approved-source indicators in the left rail.
 
-Use the reference attempt or upload the handwritten sample. Run diagnosis.
+## 0:32–1:05 — Real handwritten diagnosis
 
-“The learner changed only the denominator. GPT-5.6 inspects the work, identifies the specific misconception, and proposes one visual move—not a full solution.”
+Click **Use safe sample**, then **Diagnose the misconception**.
 
-Read only the short next-move prompt.
+**Say:** “This is a bundled, non-identifying handwritten sample. GPT-5.6 reads the image, recognizes that the learner changed only the denominator, and proposes one visual step instead of revealing the answer.”
 
-## 1:25–2:05 — Trust trace
+Read only the short learner-facing next move. Let the live call finish on screen; a clean cut over dead waiting time is acceptable.
 
-Move right through the five gates: multimodal moderation, retrieved curriculum, deterministic answer-leakage detection, output moderation, and independent GPT-5.6 verification.
+## 1:05–1:35 — Trust trace
 
-“Generation and approval are separate passes. If any gate fails, the candidate response is discarded and the learner gets a teacher handoff.”
+**Say:** “Before that move appears, the input is moderated, the response is grounded in approved curriculum, deterministic code checks for stored-answer leakage, the output is moderated, and a separate GPT-5.6 pass independently verifies the evidence and age level. Generation and approval have different authority.”
 
-Trigger the PII case by entering `Email me at learner@example.com about 1/4` and run it. Show that the input is held before model invocation.
+**Show:** Five passed gates, retrieved evidence, model label, and duration.
 
-## 2:05–2:32 — Codex build story
+## 1:35–2:00 — Prove adaptation
 
-Show `AGENTS.md`, the tests, `BUILD_LOG.md`, and the repository history.
+Click **Approve next move**, then **Trace the adaptation** using the prefilled follow-up.
 
-“Codex drove the event-period product narrowing, implementation, safety tests, debugging, and browser verification. I rejected its first broad rebuild plan and used the repository contract to keep every change on the judged loop.”
+**Say:** “The teacher decides whether the move advances. The learner’s second response is treated as new untrusted evidence and runs through every gate again. Only after the reasoning changes does Gazelle step up to a transfer question.”
 
-## 2:32–2:55 — Impact and close
+**Show:** Turn-one to turn-two adaptation strip and second verified trace.
 
-“Gazelle does not claim to replace teachers. It gives them a bounded adaptive tutor whose decisions can be inspected, challenged, and improved. The learner still does the thinking; the teacher stays in control.”
+## 2:00–2:20 — Fail closed
+
+Select **Privacy trap** and run it.
+
+**Say:** “A contact detail is blocked locally before any learner text reaches a model. Every failure becomes a visible teacher handoff—not partially validated model output.”
+
+**Show:** Held status and failed privacy gate.
+
+## 2:20–2:43 — Codex build story
+
+**Say:** “Codex drove the event-period implementation, tests, hosting diagnosis, adversarial evals, and submission packaging. I rejected its first broad LMS rebuild plan, enforced the repository safety contract, and required live evidence. The final release runs a twelve-case text-and-image matrix and never counts reference fallback as a live pass.”
+
+**Show:** Brief cuts of `AGENTS.md`, `BUILD_LOG.md`, tests, and `docs/live-eval-results.json`.
+
+## 2:43–2:55 — Close
+
+**Say:** “Gazelle does not replace teachers. It gives them a bounded adaptive tutor whose decisions can be inspected, challenged, and improved. The learner still does the thinking; the teacher stays in control.”
 
 End on the successful trust trace and product title.
 
-## Recording rules
+## Upload checklist
 
-- Keep the final video between 2:35 and 2:55.
-- Use the deployed production URL.
-- Record at 1440p or higher with browser zoom near 90%.
-- No architecture slide before the working product.
-- Do not call the product COPPA-compliant or claim measured learning gains without evidence.
-
+- Public YouTube visibility—not unlisted if the form requires publicly visible.
+- Runtime under 3:00; target 2:45–2:55.
+- Spoken audio explicitly covers both Codex and GPT-5.6.
+- No copyrighted music, student identity, notifications, API keys, or third-party marks.
+- Title: `Gazelle Trace — OpenAI Build Week 2026 Demo`
+- Suggested description: `Gazelle Trace is a teacher-bounded GPT-5.6 tutor that diagnoses handwritten reasoning, proposes one verified Socratic move, and exposes an auditable trust trace. Built with Codex for OpenAI Build Week.`

@@ -24,3 +24,13 @@
 - Added teacher approve/hold controls and a local audit export that excludes uploaded images and raw learner text.
 - Added a reproducible live-eval runner that fails any model-backed case using demo fallback. The first run exposed two conservative verifier holds; prompts were clarified without weakening verification, and the final live slice passed 5/5.
 - Added the missing MIT license required for a judgeable public repository.
+
+## 2026-07-17 — Submission hardening
+
+- Changed the hosted access policy from owner-only to public so judges can test without credentials.
+- Added a bundled, non-identifying handwritten worksheet and a one-click `Use safe sample` path to make the multimodal claim directly testable.
+- Expanded the live release matrix from five text-oriented cases to twelve text-and-image cases, including unreadable work and prompt injection inside an image.
+- Corrected the prompt-injection rubric to count any visible fail-closed verification hold, not only a deterministic leakage-gate rejection.
+- Tightened the primary and verifier instructions after the expanded matrix showed an unrelated science request being redirected into a fraction exercise instead of handed to a teacher.
+- Rewrote the README around a 60-second judge path, explicit Codex collaboration, honest limitations, and public testing instructions.
+- Prepared final Devpost copy and a timed 2:55 recording script; public YouTube publication remains an entrant-owned submission step.

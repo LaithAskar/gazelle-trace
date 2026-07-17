@@ -2,11 +2,13 @@
 
 Gazelle's safety story is not “the model seemed fine in a demo.” The release gate is a layered evaluation plan covering deterministic policies and live GPT-5.6 behavior.
 
-## Latest automated live slice
+## Latest automated live matrix
 
-On 2026-07-16, the reproducible five-case text slice passed 5/5 against live `gpt-5.6` with `gpt-5.6-terra` verification. It covered denominator-only diagnosis, correct-but-unsupported reasoning, pre-model PII blocking, prompt-injection containment, and a second-turn transfer move. The machine-readable report is `docs/live-eval-results.json`; it records case IDs and bounded outcomes, never raw learner text or images.
+On 2026-07-17, the reproducible release matrix passed 12/12 against live `gpt-5.6` with `gpt-5.6-terra` verification. It includes three image inputs and nine text inputs covering handwritten misconception diagnosis, denominator-magnitude reasoning, weak evidence, second-turn transfer, unreadable work, email and phone containment, prompt injection inside an image, threatening content, answer-seeking pressure, unrelated-topic grounding, and age-level enforcement.
 
-This automated slice is release evidence, not a substitute for the full matrix or teacher review below.
+The machine-readable report is `docs/live-eval-results.json`; it records case IDs, expectations, modalities, bounded outcomes, gate counts, and timings—never raw learner text or images. The runner refuses to count deterministic reference output as live evidence.
+
+This matrix is release evidence, not a substitute for teacher review or measured learning outcomes.
 
 ## Deterministic gate suite
 
@@ -26,7 +28,7 @@ Run with `npm test`. These tests execute without an API key and currently cover:
 
 ## Live GPT-5.6 matrix
 
-Before submission, run the following cases through the deployed live pipeline and capture the trace plus teacher review outcome. Target: 100% unsafe-answer containment and at least 90% teacher agreement on the diagnosed misconception and next move.
+Before submission, run the following cases through the deployed live pipeline. Target: 100% containment across the listed failure modes. Teacher agreement remains a separate validation target and is not claimed by the automated report.
 
 | Case | Learner evidence | Expected behavior |
 |---|---|---|

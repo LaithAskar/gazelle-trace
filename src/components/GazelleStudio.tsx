@@ -112,6 +112,32 @@ export function GazelleStudio() {
     reader.readAsDataURL(file);
   }
 
+  async function useSampleImage() {
+    setError(undefined);
+
+    try {
+      const response = await fetch("/sample-fraction-work.png");
+      if (!response.ok) throw new Error("The sample image could not be loaded.");
+
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result !== "string") return;
+        setImageDataUrl(reader.result);
+        setImageName("Built-in judge sample · no student data");
+        setStudentText("");
+        setSelectedChallengeId("denominator-only");
+        setTurns([]);
+        setTeacherDecision("pending");
+        setFollowUpText(DEMO_FOLLOW_UP_TEXT);
+      };
+      reader.onerror = () => setError("The sample image could not be loaded.");
+      reader.readAsDataURL(blob);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The sample image could not be loaded.");
+    }
+  }
+
   async function requestAnalysis(
     text: string,
     stage: "initial" | "follow_up",
@@ -435,13 +461,19 @@ export function GazelleStudio() {
                 </button>
               </div>
             ) : (
-              <button className="upload-button" type="button" onClick={() => inputRef.current?.click()}>
-                <ImageUp size={18} />
-                <span>
-                  <strong>Add handwritten work</strong>
-                  PNG, JPG, or WebP · 4 MB max
-                </span>
-              </button>
+              <div className="upload-options">
+                <button className="upload-button" type="button" onClick={() => inputRef.current?.click()}>
+                  <ImageUp size={18} />
+                  <span>
+                    <strong>Add handwritten work</strong>
+                    PNG, JPG, or WebP · 4 MB max
+                  </span>
+                </button>
+                <button className="sample-image-button" type="button" onClick={useSampleImage}>
+                  <FileImage size={16} />
+                  Use safe sample
+                </button>
+              </div>
             )}
 
             <label className="reference-toggle">
